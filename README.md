@@ -30,6 +30,6 @@ mkdir build
 cd build
 # move graph.txt into "build" directory
 cmake ..
-make swsim
+make swsim # This will show the results of partitioning for now
 make hls
 ```
