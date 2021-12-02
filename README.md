@@ -4,7 +4,7 @@
 Yiqun Li, Chengxin Wang, Rui Lin
 
 ## Setup
-Our program is run on the Merlin AWS instance. After you start an instance, please follow the following commands to set up the environment.
+Our program runs on the Merlin AWS instance. After you start an instance, please follow the following commands to set up the environment.
 ```bash
 # set up FPGA
 cd $AWS_FPGA_REPO_DIR
@@ -25,7 +25,7 @@ git clone https://github.com/yiqli53/CS259-Project.git
 
 ## Usage
 ```bash
-cd bfs
+cd CS259-Project
 mkdir build
 cd build
 # move graph.txt into "build" directory
