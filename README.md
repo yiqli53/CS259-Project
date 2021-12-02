@@ -1,4 +1,4 @@
-# 259 Final Project
+# UCLA CS259 Fall 2021 Final Project
 
 ## Team
 Yiqun Li, Chengxin Wang, Rui Lin
