@@ -62,7 +62,7 @@ void DisplayVertices(vector<Vertex*> vertices) {
 
 
 int main(int argc, char* argv[]) {
-  const size_t num_partitions = 1;
+  const size_t num_partitions = 10000;
   Result* result = PartitionGraph(argv[1], num_partitions);
 
   cout << "graph partition finish" << endl;
@@ -76,16 +76,29 @@ int main(int argc, char* argv[]) {
 
   BFS(intervals, shards, vertices, edges, num_partitions);
 
+  /*
+  clog << "Interval 2990: " << endl;
+  for(auto& vertex : intervals[2989]->vertices)
+    clog << vertex->id << " ";
   clog << endl;
+
+  clog << "Interval 3121: " << endl;
+  for(auto& vertex : intervals[3120]->vertices)
+    clog << vertex->id << " ";
   clog << endl;
-  clog << endl;
+
+  clog << "subshard 3121 2990:" << endl;
+  for(auto& edge : shards[3120]->subshards[2989]->edges)
+    clog << edge->src->id << " -> " << edge->dst->id << endl;
+  */
+
 
   //DisplayVertices(vertices);
 
   ofstream MyFile("../answer.txt");
 
   for(auto& vertex : vertices) {
-    MyFile << vertex->id << ":" << vertex->depth << endl;
+    if(vertex->id >= 0) MyFile << vertex->id << ":" << vertex->depth << endl;
   }
 
   MyFile.close();

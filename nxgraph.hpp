@@ -76,9 +76,7 @@ inline pair<vector<Edge*>, vector<Vertex*>> ReadFile(
   const char* next_pos = nullptr;
   vector<Edge*> edges;
   vector<Vertex*> vertices;
-  long countt = 0;
   int count = 0;
-
   for (const char* ptr = begin_ptr; ptr < end_ptr; ++ptr) {
     // Skip spaces and tabs.
     for (; isblank(*ptr); ++ptr) {
@@ -170,9 +168,6 @@ inline pair<vector<Edge*>, vector<Vertex*>> ReadFile(
       *min_int = std::min({*min_int, src, dst});
     }
     edges.push_back(edge);
-
-    countt += 1;
-    if(countt % 1000 == 0) clog << countt / 1000 << endl;
   }
 
   vertices[0]->depth=0;
@@ -217,10 +212,16 @@ inline Result* PartitionGraph(const string& filename, int num_partitions) {
   vector<Edge*> edges = read_result.first;
   vector<Vertex*> vertices = read_result.second;
 
-  int num_vertices = max_int - min_int + 1;
+  int num_vertices = vertices.size();
 
-  //TODO: how to handle padding
-  const size_t partition_size = (num_vertices+1) / num_partitions;
+  int padding = num_partitions - (num_vertices % num_partitions);
+  for(int i = 0 ; i < padding ; i++) {
+    Vertex* pad = new Vertex(-1, -1, -1);
+    vertices.push_back(pad);
+  }
+
+  num_vertices = vertices.size();
+  const size_t partition_size = num_vertices / num_partitions;
 
   //p intervals, p shards and p^2 subshards
   vector<Interval*> intervals(num_partitions);

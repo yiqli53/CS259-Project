@@ -12,21 +12,13 @@ using std::ostream;
 using std::clog;
 
 //make a local copy
-vector<Vertex> CopyToCache(Interval* original) {
+vector<Vertex> CopyToCache(vector<Vertex*> original_vertices) {
   vector<Vertex> copied;
-  vector<Vertex*> original_vertices = original->vertices;
   for(auto& vertex : original_vertices) {
     Vertex new_vertex = *vertex;
     copied.push_back(new_vertex);
   }
   return copied;
-}
-
-int FindVertexById(vector<Vertex> vertices, const int id) {
-  for(int i = 0 ; i < vertices.size() ; i++) {
-    if(vertices[i].id == id) return i;
-  }
-  return -1;
 }
 
 void BFS(vector<Interval*> intervals, vector<Shard*> shards, vector<Vertex*> vertices, vector<Edge*> edges, int num_partitions) {
@@ -38,28 +30,37 @@ void BFS(vector<Interval*> intervals, vector<Shard*> shards, vector<Vertex*> ver
   int counter = 0;
   int percent = 0;
   for(auto& current_shard : shards) {
-    write_cache = CopyToCache(intervals[i]);
+    write_cache = CopyToCache(intervals[i]->vertices);
+    map<int, int> write_map;
+    for(int ii = 0 ; ii < write_cache.size() ; ii++) {
+      write_map.insert(pair<int, int>(write_cache[ii].id, ii));
+    }
+
     for(int j = 0 ; j < num_partitions ; j++) {
-      read_cache = CopyToCache(intervals[j]);
+      read_cache = CopyToCache(intervals[j]->vertices);
+      map<int, int> read_map;
+      for(int jj = 0 ; jj < read_cache.size() ; jj++) {
+        read_map.insert(pair<int, int>(read_cache[jj].id, jj));
+      }
       for(auto& edge : current_shard->subshards[j]->edges) {
         int parent_id = edge->src->id;
-        int parent_level = read_cache[FindVertexById(read_cache, parent_id)].depth;
+        int parent_level = read_cache[read_map.find(parent_id)->second].depth;
         if(i == j) {
-          int temp = write_cache[FindVertexById(write_cache, parent_id)].depth;
+          int temp = write_cache[write_map.find(parent_id)->second].depth;
           if((parent_level > temp && temp != -1) || (parent_level==-1 && temp != -1))
             parent_level =  temp;
         }
         
-        
         int children_id = edge->dst->id;
-        int children_level = write_cache[FindVertexById(write_cache, children_id)].depth;
+        int children_level = write_cache[write_map.find(children_id)->second].depth;
         
         if((children_level > parent_level+1 && parent_level != -1)|| (children_level == -1 && parent_level != -1)) {
-          int target = FindVertexById(write_cache, children_id);
+          int target = write_map.find(children_id)->second;
           if(parent_level != -1 && (write_cache[target].depth > parent_level+1 || write_cache[target].depth == -1)) {
             write_cache[target].depth = parent_level+1;
           }
         }
+
         if(counter == total) {
           cout << ++percent << "%" << endl;
           counter = 0;
