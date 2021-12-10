@@ -239,6 +239,7 @@ inline Result* PartitionGraph(const string& filename, int num_partitions) {
     }
     shard = new Shard{subshards};
   }
+
   int counter = 0;
   for (auto& vertex : vertices) {
     vertex->interval = (counter/partition_size);
