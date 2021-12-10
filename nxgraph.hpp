@@ -28,7 +28,7 @@ struct Vertex {
   int id;
   int depth;
   int interval;
-  Vertex( int ax, int ay, int az ) : id( ax ), depth( ay ), interval ( az ){}
+  Vertex(int ax, int ay, int az) : id(ax), depth(ay), interval(az){}
 };
 
 struct Edge {
@@ -48,7 +48,14 @@ struct Shard {
   vector<SubShard*> subshards;
 };
 
-pair<vector<Edge*>, vector<Vertex*>> ReadEdges(
+struct Result {
+  vector<Vertex*> vertices;
+  vector<Edge*> edges;
+  vector<Interval*> intervals;
+  vector<Shard*> shards;
+};
+
+inline pair<vector<Edge*>, vector<Vertex*>> ReadFile(
     const char* begin_ptr, const char* end_ptr, int* max_int = nullptr,
     int* min_int = nullptr) {
   using std::nullptr_t;
@@ -69,7 +76,9 @@ pair<vector<Edge*>, vector<Vertex*>> ReadEdges(
   const char* next_pos = nullptr;
   vector<Edge*> edges;
   vector<Vertex*> vertices;
+  long countt = 0;
   int count = 0;
+
   for (const char* ptr = begin_ptr; ptr < end_ptr; ++ptr) {
     // Skip spaces and tabs.
     for (; isblank(*ptr); ++ptr) {
@@ -95,11 +104,16 @@ pair<vector<Edge*>, vector<Vertex*>> ReadEdges(
       }
     }
 
+
+    
     /// Swallows empty lines.
     const int src = strtoull(ptr, const_cast<char**>(&next_pos), 10);
+    /*
     if (next_pos == ptr) {
       break;
     }
+    */
+
 
     /// Skip non-digits.
     for (; !isdigit(*next_pos); ++next_pos) {
@@ -119,6 +133,7 @@ pair<vector<Edge*>, vector<Vertex*>> ReadEdges(
         break;
       }
     }
+    
 
     //check if src/dst Vertex already exist; if not, create them
     Vertex* src_vertex;
@@ -155,7 +170,12 @@ pair<vector<Edge*>, vector<Vertex*>> ReadEdges(
       *min_int = std::min({*min_int, src, dst});
     }
     edges.push_back(edge);
+
+    countt += 1;
+    if(countt % 1000 == 0) clog << countt / 1000 << endl;
   }
+
+  vertices[0]->depth=0;
 
   pair<vector<Edge*>, vector<Vertex*>> result;
   result.first = edges;
@@ -164,7 +184,7 @@ pair<vector<Edge*>, vector<Vertex*>> ReadEdges(
   return result;
 }
 
-pair<vector<Interval*>, vector<Shard*>> LoadEdgeList(const string& filename, const int num_intervals) {
+inline Result* PartitionGraph(const string& filename, int num_partitions) {
   
   using std::runtime_error;
 
@@ -191,7 +211,8 @@ pair<vector<Interval*>, vector<Shard*>> LoadEdgeList(const string& filename, con
   int min_int;
 
   //read edges from file
-  pair<vector<Edge*>, vector<Vertex*>> read_result = ReadEdges(mmap_ptr, mmap_ptr + mmap_length, &max_int, &min_int);
+  pair<vector<Edge*>, vector<Vertex*>> read_result = ReadFile(mmap_ptr, mmap_ptr + mmap_length, &max_int, &min_int);
+
 
   vector<Edge*> edges = read_result.first;
   vector<Vertex*> vertices = read_result.second;
@@ -199,19 +220,18 @@ pair<vector<Interval*>, vector<Shard*>> LoadEdgeList(const string& filename, con
   int num_vertices = max_int - min_int + 1;
 
   //TODO: how to handle padding
-  const size_t partition_size = (num_vertices + 1) / num_intervals;
+  const size_t partition_size = (num_vertices+1) / num_partitions;
 
   //p intervals, p shards and p^2 subshards
-  vector<Interval*> intervals(num_intervals);
-  vector<Shard*> shards(num_intervals);
+  vector<Interval*> intervals(num_partitions);
+  vector<Shard*> shards(num_partitions);
   for (auto& interval : intervals) {
-    //TODO: how to define the size of each interval
     vector<Vertex*> new_vertices;
     interval = new Interval{new_vertices};
   }
 
   for (auto& shard : shards) {
-    vector<SubShard*> subshards(num_intervals);
+    vector<SubShard*> subshards(num_partitions);
     for(auto& subshard : subshards) {
       vector<Edge*> edges;
       subshard = new SubShard{edges};
@@ -229,7 +249,7 @@ pair<vector<Interval*>, vector<Shard*>> LoadEdgeList(const string& filename, con
   for(auto& edge : edges) {
     int src_interval = (edge->src)->interval;
     int dst_interval = (edge->dst)->interval;
-    shards[src_interval]->subshards[dst_interval]->edges.push_back(edge);
+    shards[dst_interval]->subshards[src_interval]->edges.push_back(edge);
   }
   if (munmap(mmap_ptr, mmap_length) != 0) {
     throw runtime_error("failed to munmap " + filename);
@@ -239,11 +259,9 @@ pair<vector<Interval*>, vector<Shard*>> LoadEdgeList(const string& filename, con
     throw runtime_error("failed to close " + filename);
   }
 
-  pair<vector<Interval*>, vector<Shard*>> partitioned_graph;
-  partitioned_graph.first = intervals;
-  partitioned_graph.second = shards;
+  Result* result = new Result{vertices, edges, intervals, shards};
 
-  return partitioned_graph;
+  return result;
 }
 
 }  // namespace nxgraph

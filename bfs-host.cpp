@@ -6,11 +6,11 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <fstream>
 
 #include <tapa.h>
 
 #include "bfs.h"
-#include "nxgraph.hpp"
 
 using std::clog;
 using std::endl;
@@ -18,17 +18,9 @@ using std::runtime_error;
 using std::vector;
 
 using namespace nxgraph;
+using namespace std;
 
-
-int main(int argc, char* argv[]) {
-  //const size_t num_partitions = argc > 2 ? atoi(argv[2]) : 1;
-  const size_t num_partitions = 3;
-  pair<vector<Interval*>, vector<Shard*>> partitions =
-      nxgraph::LoadEdgeList(argv[1], num_partitions);
-
-  vector<Interval*> intervals = partitions.first;
-  vector<Shard*> shards = partitions.second;
-
+void DisplayPartition(vector<Interval*> intervals, vector<Shard*> shards) {
   clog << "********************Graph Partition********************" << endl;
   clog << "num of intervals: " << intervals.size() << endl;
   clog << "num of shards: " << shards.size() << endl;
@@ -58,7 +50,46 @@ int main(int argc, char* argv[]) {
     counter += 1;
   }
   clog << "********************Graph Partition********************" << endl;
-  
+}
+
+void DisplayVertices(vector<Vertex*> vertices) {
+  clog << "********************Vertex Information********************" << endl;
+  for(auto& vertex : vertices) {
+    clog << "Vertex " << vertex->id << " has depth of " << vertex->depth << endl;
+  }
+  clog << "********************Vertex Information********************" << endl;
+}
+
+
+int main(int argc, char* argv[]) {
+  const size_t num_partitions = 1;
+  Result* result = PartitionGraph(argv[1], num_partitions);
+
+  cout << "graph partition finish" << endl;
+
+  vector<Interval*> intervals = result->intervals;
+  vector<Shard*> shards = result->shards;
+  vector<Vertex*> vertices = result->vertices;
+  vector<Edge*> edges = result->edges;
+
+  //DisplayPartition(intervals, shards);
+
+  BFS(intervals, shards, vertices, edges, num_partitions);
+
+  clog << endl;
+  clog << endl;
+  clog << endl;
+
+  //DisplayVertices(vertices);
+
+  ofstream MyFile("../answer.txt");
+
+  for(auto& vertex : vertices) {
+    MyFile << vertex->id << ":" << vertex->depth << endl;
+  }
+
+  MyFile.close();
+
 
   return 0;
 }
