@@ -3,7 +3,8 @@
 ## Team
 Yiqun Li, Chengxin Wang, Rui Lin
 
-## Setup
+## Software Simulation
+# Setup
 Our program is run on the Merlin AWS instance. After you connect to an instance, please follow the following commands to set up the environment.
 ```bash
 # set up FPGA
@@ -44,7 +45,7 @@ cmake ..
 cd ..
 ````
 
-## Usage
+# Usage
 ```bash
 # Make sure you are in "CS259-Project" directory
 mv facebook_combined.txt graph.txt # or "soc-LiveJournal1.txt" if LiveJournal
@@ -56,3 +57,5 @@ rm graph.txt
 rm answer.txt
 ```
 Always name the graph you want to run on as "graph.txt".
+
+## Hardware Simulation
