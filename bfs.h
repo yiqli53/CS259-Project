@@ -14,6 +14,8 @@ using namespace nxgraph;
 template <typename T>
 using bits = ap_uint<tapa::widthof<T>()>;
 
-void BFS(vector<Interval*> intervals, vector<Shard*> shards, const int num_partitions);
+void Bfs(tapa::istream<Interval*>& intervals,
+      tapa::istream<Shard*>& shards,
+      tapa::ostream<Interval*>& updated_intervals, uint64_t num_partitions);
 
 #endif  // BFS_H_
