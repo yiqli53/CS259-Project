@@ -23,7 +23,7 @@ cmake --version # make sure the version is >= 3.13
 
 # download file
 cd $VITIS_DIR/examples/xilinx
-#git clone ...
+git clone https://github.com/yiqli53/CS259-Project.git
 cd CS259-Project
 sudo yum install java
 sudo yum install java-devel
