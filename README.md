@@ -59,3 +59,35 @@ rm answer.txt
 Always name the graph you want to run on as "graph.txt".
 
 ## Hardware Simulation
+### Setup
+```bash
+git clone https://github.com/aws/aws-fpga.git $AWS_FPGA_REPO_DIR
+cd aws-fpga
+source vitis_setup.sh
+
+cd Vitis/examples/xilinx
+sudo pip install cmake
+curl -L git.io/JnERa | bash
+source <(curl -L bit.ly/3BzVG16)
+PATH="${HOME}/.local/bin:${PATH}"
+
+git clone https://github.com/yiqli53/CS259-Project.git
+cd CS259-Project
+sudo apt install default-jdk
+
+wget https://snap.stanford.edu/data/facebook_combined.txt.gz
+gzip -d facebook_combined.txt.gz
+wget https://snap.stanford.edu/data/soc-LiveJournal1.txt.gz
+gzip -d soc-LiveJournal1.txt.gz
+
+javac BFSVerifier.java
+javac ProcessFile.java
+java ProcessFile
+rm soc-LiveJournal1.txt
+mv graph.txt soc-LiveJournal1.txt
+
+mkdir build
+cd build
+cmake ..
+cd ..
+```
