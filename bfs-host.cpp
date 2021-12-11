@@ -20,6 +20,7 @@ using std::vector;
 using namespace nxgraph;
 using namespace std;
 
+//For debugging purpose
 void DisplayPartition(vector<Interval*> intervals, vector<Shard*> shards) {
   clog << "********************Graph Partition********************" << endl;
   clog << "num of intervals: " << intervals.size() << endl;
@@ -52,6 +53,7 @@ void DisplayPartition(vector<Interval*> intervals, vector<Shard*> shards) {
   clog << "********************Graph Partition********************" << endl;
 }
 
+//For debugging purpose
 void DisplayVertices(vector<Vertex*> vertices) {
   clog << "********************Vertex Information********************" << endl;
   for(auto& vertex : vertices) {
@@ -60,30 +62,23 @@ void DisplayVertices(vector<Vertex*> vertices) {
   clog << "********************Vertex Information********************" << endl;
 }
 
+void WriteResult(vector<Vertex*> vertices) {
+  ofstream MyFile("../answer.txt");
+  for(auto& vertex : vertices)
+    if(vertex->id >= 0) MyFile << vertex->id << ":" << vertex->depth << endl;
+  MyFile.close();
+}
 
 int main(int argc, char* argv[]) {
-  const size_t num_partitions = 10;
+  int num_partitions = 10;
   Result* result = PartitionGraph(argv[1], num_partitions);
 
   vector<Interval*> intervals = result->intervals;
   vector<Shard*> shards = result->shards;
   vector<Vertex*> vertices = result->vertices;
-  vector<Edge*> edges = result->edges;
 
-  //DisplayPartition(intervals, shards);
+  BFS(intervals, shards, num_partitions);
 
-  BFS(intervals, shards, vertices, edges, num_partitions);
-
-  //DisplayVertices(vertices);
-
-  ofstream MyFile("../answer.txt");
-
-  for(auto& vertex : vertices) {
-    if(vertex->id >= 0) MyFile << vertex->id << ":" << vertex->depth << endl;
-  }
-
-  MyFile.close();
-
-
+  WriteResult(vertices);
   return 0;
 }

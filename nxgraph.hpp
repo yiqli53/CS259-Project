@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <set>
 
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -55,28 +56,19 @@ struct Result {
   vector<Shard*> shards;
 };
 
-inline pair<vector<Edge*>, vector<Vertex*>> ReadFile(
-    const char* begin_ptr, const char* end_ptr, int* max_int = nullptr,
-    int* min_int = nullptr) {
+inline pair<vector<Edge*>, vector<Vertex*>> ReadFile(const char* begin_ptr, const char* end_ptr) {
   using std::nullptr_t;
   using std::numeric_limits;
   using std::string;
   using std::strtoull;
   using std::unique_ptr;
   using std::vector;
-  if (max_int != nullptr) {
-    *max_int = numeric_limits<int>::min();
-  }
-  if (min_int != nullptr) {
-    *min_int = numeric_limits<int>::max();
-  }
-
 
   map<int, int> vertex_map;
   const char* next_pos = nullptr;
   vector<Edge*> edges;
   vector<Vertex*> vertices;
-  int count = 0;
+
   for (const char* ptr = begin_ptr; ptr < end_ptr; ++ptr) {
     // Skip spaces and tabs.
     for (; isblank(*ptr); ++ptr) {
@@ -101,17 +93,9 @@ inline pair<vector<Edge*>, vector<Vertex*>> ReadFile(
         break;
       }
     }
-
-
     
     /// Swallows empty lines.
     const int src = strtoull(ptr, const_cast<char**>(&next_pos), 10);
-    /*
-    if (next_pos == ptr) {
-      break;
-    }
-    */
-
 
     /// Skip non-digits.
     for (; !isdigit(*next_pos); ++next_pos) {
@@ -132,50 +116,36 @@ inline pair<vector<Edge*>, vector<Vertex*>> ReadFile(
       }
     }
     
-
     //check if src/dst Vertex already exist; if not, create them
     Vertex* src_vertex;
     Vertex* dst_vertex;
-    auto src_find = vertex_map.find(src);
-    auto dst_find = vertex_map.find(dst);
-    if(src_find != vertex_map.end()) {
-      src_vertex = vertices[(src_find->second)];
-    } else {
+    if(vertex_map.find(src) == vertex_map.end()) {
+      vertex_map.insert(pair<int, int>(src, vertices.size()));
       src_vertex = new Vertex(src, -1, -1);
       vertices.push_back(src_vertex);
-      vertex_map.insert(std::pair<int, int>(src, count));
-      count += 1;
+    } else {
+      src_vertex = vertices[vertex_map.find(src)->second];
     }
 
-    if(dst_find != vertex_map.end()) {
-      dst_vertex = vertices[(dst_find->second)];
-    } else {
+    if(vertex_map.find(dst) == vertex_map.end()) {
+      vertex_map.insert(pair<int, int>(dst, vertices.size()));
       dst_vertex = new Vertex(dst, -1, -1);
       vertices.push_back(dst_vertex);
-      vertex_map.insert(std::pair<int, int>(dst, count));
-      count += 1;
+    } else {
+      dst_vertex = vertices[vertex_map.find(dst)->second];
     }
-
 
     Edge* edge = new Edge{src_vertex, dst_vertex};
     if (*ptr != '\n' && *ptr != '\r') {
       ptr = next_pos;
     }
-    if (max_int != nullptr) {
-      *max_int = std::max({*max_int, src, dst});
-    }
-    if (min_int != nullptr) {
-      *min_int = std::min({*min_int, src, dst});
-    }
     edges.push_back(edge);
   }
 
   vertices[0]->depth=0;
-
   pair<vector<Edge*>, vector<Vertex*>> result;
   result.first = edges;
   result.second = vertices;
-
   return result;
 }
 
@@ -202,26 +172,20 @@ inline Result* PartitionGraph(const string& filename, int num_partitions) {
     throw runtime_error("failed to mmap " + filename);
   }
 
-  int max_int;
-  int min_int;
-
   //read edges from file
-  pair<vector<Edge*>, vector<Vertex*>> read_result = ReadFile(mmap_ptr, mmap_ptr + mmap_length, &max_int, &min_int);
-
-
+  pair<vector<Edge*>, vector<Vertex*>> read_result = ReadFile(mmap_ptr, mmap_ptr + mmap_length);
+  
   vector<Edge*> edges = read_result.first;
   vector<Vertex*> vertices = read_result.second;
 
   int num_vertices = vertices.size();
 
   int padding = num_partitions - (num_vertices % num_partitions);
-  for(int i = 0 ; i < padding ; i++) {
-    Vertex* pad = new Vertex(-1, -1, -1);
-    vertices.push_back(pad);
-  }
+  for(int i = 0 ; i < padding ; i++)
+    vertices.push_back(new Vertex(-1, -1, -1));
 
   num_vertices = vertices.size();
-  const size_t partition_size = num_vertices / num_partitions;
+  const int partition_size = num_vertices / num_partitions;
 
   //p intervals, p shards and p^2 subshards
   vector<Interval*> intervals(num_partitions);
@@ -243,16 +207,16 @@ inline Result* PartitionGraph(const string& filename, int num_partitions) {
   int counter = 0;
   for (auto& vertex : vertices) {
     vertex->interval = (counter/partition_size);
-    auto test = intervals[counter/partition_size];
     intervals[counter/partition_size]->vertices.push_back(vertex);
     counter += 1;
   }
 
   for(auto& edge : edges) {
-    int src_interval = (edge->src)->interval;
-    int dst_interval = (edge->dst)->interval;
+    int src_interval = edge->src->interval;
+    int dst_interval = edge->dst->interval;
     shards[dst_interval]->subshards[src_interval]->edges.push_back(edge);
   }
+
   if (munmap(mmap_ptr, mmap_length) != 0) {
     throw runtime_error("failed to munmap " + filename);
   }
@@ -262,8 +226,5 @@ inline Result* PartitionGraph(const string& filename, int num_partitions) {
   }
 
   Result* result = new Result{vertices, edges, intervals, shards};
-
   return result;
-}
-
-}  // namespace nxgraph
+}}  // namespace nxgraph
