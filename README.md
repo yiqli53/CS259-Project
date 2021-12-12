@@ -3,6 +3,9 @@
 ## Team
 Yiqun Li, Chengxin Wang, Rui Lin
 
+## About Project
+In this project, we try to implement FPGP and accelerate using TAPA. The repository contains 2 branches. The "main" branch contains the baseline or standard version of FPGP, and the "TAPA" branch contains the baseline plus TAPA acceleration. For now, we have been able to perform software simulation on both versions, and get good results.
+
 ## How to run
 Please initiate a "Vitis 2020.2 Developer AMI" instance on AWS.
 
