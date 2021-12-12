@@ -4,6 +4,8 @@
 Yiqun Li, Chengxin Wang, Rui Lin
 
 ## How to run
+Please initiate a "Vitis 2020.2 Developer AMI" instance on AWS.
+
 ### Setup
 ```bash
 git clone https://github.com/aws/aws-fpga.git $AWS_FPGA_REPO_DIR
