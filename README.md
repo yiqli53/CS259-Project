@@ -17,9 +17,9 @@ source vitis_setup.sh
 
 cd Vitis/examples/xilinx
 sudo apt-get install cmake
-sudo apt install ca-certificates
-sudo curl -L git.io/JnERa | bash
-source <(curl -L bit.ly/3BzVG16)
+sudo apt install ca-certificates #1
+sudo curl -L git.io/JnERa | bash #2
+source <(curl -L bit.ly/3BzVG16) #3
 PATH="${HOME}/.local/bin:${PATH}"
 sudo apt install default-jdk
 ```
@@ -43,6 +43,7 @@ mkdir build
 cd build
 cmake ..
 ```
+If cmake returns an error, please re-run the #1-#3 commands in Setup section.
 
 ### Run
 Before you run, please make sure that the input graph is named as "graph.txt".
