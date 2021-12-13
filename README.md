@@ -7,7 +7,7 @@ Yiqun Li, Chengxin Wang, Rui Lin
 In this project, we try to implement FPGP and accelerate using TAPA. The repository contains 2 branches. The "main" branch contains the baseline or standard version of FPGP, and the "TAPA" branch contains the baseline plus TAPA acceleration. For now, we have been able to perform software simulation on both versions, and get good results.
 
 ## How to run
-Please initiate a "Vitis 2020.2 Developer AMI" instance on AWS.
+Please initiate a "Vitis 2020.2 Developer AMI" instance on AWS and log in as "ubuntu".
 
 ### Setup
 ```bash
@@ -59,4 +59,11 @@ java BFSVerifier fb_answer.txt answer.txt
 or
 ```bash
 java BFSVerifier lj_answer.txt answer.txt
+```
+
+### Switch between baseline and TAPA
+You can use the following commands to switch between branches.
+```bash
+git checkout TAPA
+git checkout main
 ```
